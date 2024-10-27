@@ -1,13 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="./style.css" />
-  <title>ADFG(V) Cipher</title>
-</head>
-<body>
-  <div>test</div>
-</body>
-<script src="./dist/app.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./style.css" />
+    <title>ADFG(V)X Cipher</title>
+  </head>
+  <body>
+    <div class="header">
+      ADFG(V)X Cipher <img src="./assets/typewriter.svg" alt="" />
+    </div>
+    <h1>"Gott mit uns"</h1>
+    <div class="layout">
+      <div class="authors">
+        <img src="./assets/soldier1.jpg" alt="" />
+      </div>
+      <div class="box">
+        <div class="inputs">
+          <label for="text-to-encrypt">Enter Matrix Key</label>
+          <textarea id="key-text" placeholder="Enter Key here..."></textarea>
+          <label for="text-to-encrypt">Text to be encrypted</label>
+          <textarea
+            id="text-to-encrypt"
+            placeholder="Type text you want to encrypt"
+          ></textarea>
+          <label for="filtered-key-text">Filtered Text</label>
+          <textarea
+            id="filtered-text-to-encrypt"
+            placeholder="Filtered Key will appear here..."
+            readonly
+          ></textarea>
+          <label for="matrix-key">Matrix with Key</label>
+          <textarea
+            id="matrix-with-key"
+            placeholder="Matrix with Key will appear here..."
+            readonly
+          ></textarea>
+          <label for="text-to-encrypt">Encrypted text</label>
+          <textarea
+            id="encrypted-text"
+            placeholder="Encryped text will appear here..."
+          ></textarea>
+          <label for="text-to-decrypt">To be decrypted</label>
+          <textarea
+            id="text-to-decrypt"
+            placeholder="Type text you want to decrypt"
+          ></textarea>
+          <label for="decrypted-text">Decrypted text</label>
+          <textarea
+            id="decrypted-text"
+            placeholder="Decrypted text will appear here..."
+            readonly
+          ></textarea>
+          <label for="decrypted-filtered-text">Decrypted Filtered text</label>
+          <textarea
+            id="decrypted-filtered-text"
+            placeholder="Decrypted filtered text will appear here..."
+            readonly
+          ></textarea>
+        </div>
+        <div class="control-buttons">
+          <label for="cipher-variant">Select cipher variant</label>
+          <select id="cipher-variant">
+            <option value="ADFGX">ADFGX</option>
+            <option value="ADFGVX" selected>ADFGVX</option>
+          </select>
+          <button class="playfair-button">
+            5x5 <br />
+            Example
+          </button>
+          <button class="playfair-button">
+            6x6 <br />
+            Example
+          </button>
+          <button class="encrypt-button">Encrypt</button>
+          <button class="decrypt-button">Decrypt</button>
+        </div>
+      </div>
+      <div class="authors">
+        <img src="./assets/soldier.jpg" alt="" />
+      </div>
+    </div>
+  </body>
+  <script src="./dist/app.js"></script>
 </html>
