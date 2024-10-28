@@ -81,11 +81,10 @@ h1 {
   display: flex;
   background-color: #e7e7e7;
   margin: 20px 0px 20px 0px;
-  padding: 30px;
+  padding: 25px;
   border-radius: 5px;
   box-shadow: 16px 16px 32px rgba(0, 0, 0, 0.2);
-  gap: 30px;
-  width: 700px;
+  width: auto;
   max-width: 800px;
   margin: 10px;
   justify-content: center;
@@ -93,17 +92,8 @@ h1 {
   gap: 20px;
 }
 
-#toggle-language-btn {
-  color: #3e3b41;
-  padding: 10px;
-  width: 80px;
-  font-size: 16px;
-  align-self: flex-start;
-}
-
 .inputs {
   display: flex;
-  flex-direction: column;
   gap: 10px;
 }
 
@@ -114,11 +104,13 @@ h1 {
 #key-text,
 #filtered-key-text,
 #text-to-encrypt,
+#text-intermediate,
 #filtered-text-to-encrypt,
 #encrypted-text,
 #text-to-decrypt,
 #decrypted-text,
-#decrypted-filtered-text {
+#decrypted-filtered-text,
+#key-column-text {
   padding: 10px;
   border-radius: 5px;
   border: 1px solid #ccc;
@@ -126,16 +118,20 @@ h1 {
   resize: none;
   height: 30px;
   width: 300px;
+  margin-bottom: 5px;
 }
 
-#matrix-with-key {
+#matrix-with-key,
+#matrix-column-key {
+  background-color: white;
   padding: 10px;
   border-radius: 5px;
   border: 1px solid #ccc;
   font-size: 14px;
   resize: none;
-  height: 100px;
-  width: auto;
+  height: auto;
+  width: 300px;
+  margin-bottom: 5px;
 }
 
 .key-text {
@@ -150,18 +146,15 @@ h1 {
   gap: 10px;
 }
 
-#language-button {
-  align-self: flex-start;
-  margin-bottom: 40px;
-  font-weight: bold;
-  padding: 10px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+#cipher-variant {
+  padding: 8px;
   font-size: 16px;
+  color: #333;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
-.playfair-button,
 .encrypt-button,
 .decrypt-button {
   font-weight: bold;
@@ -170,4 +163,36 @@ h1 {
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
+}
+
+#example-button {
+  margin-top: 20px;
+  font-weight: bold;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.matrix-display table,
+.matrix-column table {
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.matrix-display th,
+.matrix-display td,
+.matrix-column th,
+.matrix-column td {
+  border: 1px solid #000;
+  padding: 5px;
+  text-align: center;
+  font-family: monospace;
+}
+
+.matrix-display th,
+.matrix-column th {
+  background-color: #f0f0f0;
+  font-weight: bold;
 }
