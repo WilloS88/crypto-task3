@@ -101,28 +101,32 @@ h1 {
   font-weight: bold;
 }
 
-#key-text,
+#matrix-key-encrypt,
+#matrix-key-decrypt,
 #filtered-key-text,
 #text-to-encrypt,
-#text-intermediate,
+#text-substitution,
 #filtered-text-to-encrypt,
 #encrypted-text,
 #text-to-decrypt,
 #decrypted-text,
 #decrypted-filtered-text,
-#key-column-text {
+#column-key-encryption,
+#column-key-decryption {
   padding: 10px;
   border-radius: 5px;
   border: 1px solid #ccc;
   font-size: 14px;
   resize: none;
-  height: 30px;
+  height: 40px;
   width: 300px;
   margin-bottom: 5px;
 }
 
-#matrix-with-key,
-#matrix-column-key {
+#polybius-square-encrypt,
+#polybius-square-decrypt,
+#matrix-column-key,
+#matrix-column-key-decrypt {
   background-color: white;
   padding: 10px;
   border-radius: 5px;

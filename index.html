@@ -18,53 +18,83 @@
       <div class="box">
         <div class="inputs">
           <div>
-            <label for="text-to-encrypt">Enter Matrix Key</label>
-            <textarea id="key-text" placeholder="Enter Key here..."></textarea>
+            <label for="matrix-key-encrypt"
+              >Enter Matrix Key (Encryption)</label
+            >
+            <textarea
+              id="matrix-key-encrypt"
+              placeholder="Enter Key here..."
+            ></textarea>
+            <label for="column-key-encryption"
+              >Enter Column Keyword (Encryption)</label
+            >
+            <textarea
+              id="column-key-encryption"
+              placeholder="Enter Key here..."
+            ></textarea>
             <label for="text-to-encrypt">Text to be encrypted</label>
             <textarea
               id="text-to-encrypt"
               placeholder="Type text you want to encrypt"
             ></textarea>
-            <label for="filtered-key-text">Filtered Text</label>
+            <label for="filtered-text-to-encrypt">Filtered Text</label>
             <textarea
               id="filtered-text-to-encrypt"
               placeholder="Filtered Key will appear here..."
               readonly
             ></textarea>
-            <label for="matrix-key">Matrix with Key (Polybius Square)</label>
-            <div id="matrix-with-key" class="matrix-display"></div>
-            <label for="text-intermediate">Substitution text</label>
+            <label for="polybius-square-encrypt"
+              >Polybius Square (Encryption)</label
+            >
+            <div id="polybius-square-encrypt" class="matrix-display"></div>
+            <label for="text-substitution">Substitution text</label>
             <textarea
-              id="text-intermediate"
-              placeholder="Intermediate text will appear here..."
+              id="text-substitution"
+              placeholder="Substitution text will appear here..."
             ></textarea>
-          </div>
-          <div>
-            <label for="key-column-text">Enter Column Keyword</label>
-            <textarea id="key-column-text" placeholder="Enter Key here..."></textarea>
-            <label for="text-to-encrypt">Encrypted text</label>
+            <label for="matrix-column-key"
+              >Column key Matrix (Encryption)</label
+            >
+            <div id="matrix-column-key" class="matrix-column"></div>
+            <label for="encrypted-text">Encrypted text</label>
             <textarea
               id="encrypted-text"
               placeholder="Encrypted text will appear here..."
               readonly
             ></textarea>
-            <label for="matrix-column-key">Column key Matrix</label>
-            <div id="matrix-column-key" class="matrix-column"></div>
+          </div>
+          <div>
             <label for="text-to-decrypt">To be decrypted</label>
             <textarea
               id="text-to-decrypt"
               placeholder="Type text you want to decrypt"
             ></textarea>
+            <label for="matrix-key-decrypt"
+              >Enter Matrix Key (Decryption)</label
+            >
+            <textarea
+              id="matrix-key-decrypt"
+              placeholder="Enter Key here..."
+            ></textarea>
+            <label for="column-key-decryption"
+              >Enter Column Keyword (Decryption)</label
+            >
+            <textarea
+              id="column-key-decryption"
+              placeholder="Enter Key here..."
+            ></textarea>
+            <label for="matrix-column-key-decrypt"
+              >Column key Matrix (Decryption)</label
+            >
+            <div id="matrix-column-key-decrypt" class="matrix-column"></div>
+            <label for="polybius-square-decrypt"
+              >Polybius Square (Decryption)</label
+            >
+            <div id="polybius-square-decrypt" class="matrix-display"></div>
             <label for="decrypted-text">Decrypted text</label>
             <textarea
               id="decrypted-text"
               placeholder="Decrypted text will appear here..."
-              readonly
-            ></textarea>
-            <label for="decrypted-filtered-text">Decrypted Filtered text</label>
-            <textarea
-              id="decrypted-filtered-text"
-              placeholder="Decrypted filtered text will appear here..."
               readonly
             ></textarea>
           </div>
@@ -72,8 +102,8 @@
         <div class="control-buttons">
           <label for="cipher-variant">Select cipher variant</label>
           <select id="cipher-variant">
-            <option value="ADFGX">ADFGX</option>
-            <option value="ADFGVX" selected>ADFGVX</option>
+            <option value="ADFGX" selected>ADFGX</option>
+            <option value="ADFGVX">ADFGVX</option>
           </select>
           <button class="encrypt-button">Encrypt</button>
           <button class="decrypt-button">Decrypt</button>

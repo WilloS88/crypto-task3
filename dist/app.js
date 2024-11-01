@@ -1,11 +1,50 @@
 "use strict";
-var _a, _b;
+var _a, _b, _c;
 const indicatorsMap = {
     ADFGX: ["A", "D", "F", "G", "X"],
     ADFGVX: ["A", "D", "F", "G", "V", "X"],
 };
+const spacePlaceholder = "XMZRY";
+const numbersPlaceholder = [
+    "XZEROY",
+    "XONEY",
+    "XTWOY",
+    "XTHREEY",
+    "XFOURY",
+    "XFIVEY",
+    "XSIXY",
+    "XSEVENY",
+    "XEIGHTY",
+    "XNINEY",
+];
+// Replace spaces and numbers with placeholders
+function applyPlaceholders(text) {
+    return text
+        .replace(/ /g, spacePlaceholder) // Replace spaces
+        .replace(/\d/g, (digit) => numbersPlaceholder[parseInt(digit)]); // Replace numbers
+}
+// Revert placeholders back to spaces and numbers
+function revertPlaceholders(text) {
+    let result = text;
+    result = result.replace(new RegExp(spacePlaceholder, "g"), " "); // Replace space placeholders
+    numbersPlaceholder.forEach((placeholder, index) => {
+        result = result.replace(new RegExp(placeholder, "g"), index.toString()); // Replace number placeholders
+    });
+    return result;
+}
+function isCharInMatrix(matrix, char) {
+    for (const row of matrix) {
+        if (row.includes(char)) {
+            return true;
+        }
+    }
+    return false;
+}
 // Filter input
 function prepareInput(text, variant) {
+    if (variant === "ADFGX") {
+        text = applyPlaceholders(text); // Apply placeholders for ADFGX variant
+    }
     let result = text
         .toUpperCase()
         .replace(/[ÁÀÂÄ]/g, "A")
@@ -23,39 +62,27 @@ function prepareInput(text, variant) {
         .replace(/[Ž]/g, "Z")
         .replace(/[^A-Z0-9]/g, "");
     if (variant === "ADFGX") {
-        result = result.replace(/J/g, "I");
+        result = result.replace(/[^A-Z]/g, ""); // Remove non-letter characters
+        result = result.replace(/J/g, "I"); // Replace J with I for ADFGX
     }
     return result;
 }
-// Check if the char is in the matrix
-function isCharInMatrix(matrix, char) {
-    for (const row of matrix) {
-        if (row.includes(char)) {
-            return true;
-        }
-    }
-    return false;
-}
-// Function to generate cipher matrix
-function generateCipherMatrix(key, variant) {
-    const indicators = indicatorsMap[variant];
-    const matrixSize = indicators.length;
+// Function for displaying the key in the matrix
+function generatePolybiusSquare(key, variant) {
+    const matrixSize = variant === "ADFGX" ? 5 : 6; // Set matrix size based on the variant
     let symbols = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     if (variant === "ADFGX") {
-        symbols = symbols.replace(/J/g, "I"); // Merge I and J
+        symbols = symbols.replace(/J/g, "I"); // Merge I and J for the 5x5 matrix
     }
     else {
-        symbols += "0123456789";
+        symbols += "0123456789"; // Add digits for the ADFGVX variant
     }
-    const matrix = [];
-    for (let i = 0; i < matrixSize; i++) {
-        matrix[i] = [];
-    }
-    // Remove duplicates from key
+    const matrix = Array.from({ length: matrixSize }, () => []);
+    // Remove duplicate characters from the key
     const uniqueKeyChars = Array.from(new Set(key));
     let rowIndex = 0;
     let colIndex = 0;
-    // Add characters from key to the matrix
+    // Fill the matrix with characters from the key
     for (const char of uniqueKeyChars) {
         if (symbols.includes(char) && !isCharInMatrix(matrix, char)) {
             matrix[rowIndex][colIndex] = char;
@@ -64,12 +91,9 @@ function generateCipherMatrix(key, variant) {
                 colIndex = 0;
                 rowIndex++;
             }
-            if (rowIndex === matrixSize) {
-                break;
-            }
         }
     }
-    // Add remaining symbols to the matrix
+    // Fill the remaining cells in the matrix with leftover symbols
     for (const char of symbols) {
         if (!isCharInMatrix(matrix, char)) {
             matrix[rowIndex][colIndex] = char;
@@ -78,14 +102,11 @@ function generateCipherMatrix(key, variant) {
                 colIndex = 0;
                 rowIndex++;
             }
-            if (rowIndex === matrixSize) {
-                break;
-            }
         }
     }
     return matrix;
 }
-function displayCipherMatrix(matrix, variant) {
+function displayPolybiusSquare(matrix, variant, isEncrypting) {
     const indicators = indicatorsMap[variant];
     let formattedMatrix = "<table><tr><th></th>";
     // Header with column indicators
@@ -102,21 +123,15 @@ function displayCipherMatrix(matrix, variant) {
         formattedMatrix += "</tr>";
     }
     formattedMatrix += "</table>";
-    const matrixDiv = document.getElementById("matrix-with-key");
-    matrixDiv.innerHTML = formattedMatrix;
-}
-// Function to format the matrix with
-function formatMatrixWithLabelsHTML(matrix, variant) {
-    const indicators = indicatorsMap[variant];
-    let formattedMatrix = "<b>&nbsp;&nbsp;&nbsp;" + indicators.join("&nbsp;&nbsp;&nbsp;") + "</b><br>";
-    for (let i = 0; i < matrix.length; i++) {
-        formattedMatrix += "<b>" + indicators[i] + "</b>&nbsp;";
-        formattedMatrix += matrix[i].map(item => item.toUpperCase()).join("&nbsp;&nbsp;&nbsp;");
-        formattedMatrix += "<br>";
+    // Choose the output element based on the isEncrypting parameter
+    const matrixDiv = document.getElementById(isEncrypting ? "polybius-square-encrypt" : "polybius-square-decrypt");
+    if (matrixDiv) {
+        matrixDiv.innerHTML = formattedMatrix;
     }
-    return formattedMatrix;
+    else {
+        throw new Error(`Polybius Square output field not found for ${isEncrypting ? "encryption" : "decryption"}.`);
+    }
 }
-// Function to encrypt using the cipher matrix
 function encryptUsingMatrix(plainText, matrix, variant) {
     const indicators = indicatorsMap[variant];
     const size = indicators.length;
@@ -140,7 +155,6 @@ function encryptUsingMatrix(plainText, matrix, variant) {
     }
     return encryptedText;
 }
-// Function for columnar transposition
 function columnarTransposition(encryptedText, key) {
     const keyLength = key.length;
     const numRows = Math.ceil(encryptedText.length / keyLength);
@@ -154,7 +168,14 @@ function columnarTransposition(encryptedText, key) {
         }
     }
     const keyOrder = key.split("").map((char, index) => ({ char, index }));
-    keyOrder.sort((a, b) => a.char.localeCompare(b.char));
+    keyOrder.sort((a, b) => {
+        if (a.char === b.char) {
+            return a.index - b.index;
+        }
+        else {
+            return a.char.localeCompare(b.char);
+        }
+    });
     let result = "";
     for (const { index: colIndex } of keyOrder) {
         for (let row = 0; row < numRows; row++) {
@@ -163,67 +184,201 @@ function columnarTransposition(encryptedText, key) {
     }
     return result;
 }
-// Function to encrypt the text
-function encryptADFGVX(plainText, matrixKey, columnKey, variant) {
-    const preparedText = prepareInput(plainText, variant);
-    const cipherMatrix = generateCipherMatrix(matrixKey, variant);
-    const substitutionText = encryptUsingMatrix(preparedText, cipherMatrix, variant);
-    const encryptedText = columnarTransposition(substitutionText, columnKey);
-    return { substitutionText, encryptedText };
-}
-// Function to display columnar matrix
+// Function for displaying the column matrix during encryption
 function displayColumnarMatrix(substitutionText, key) {
     const keyLength = key.length;
     const numRows = Math.ceil(substitutionText.length / keyLength);
+    // Create the matrix
     const grid = [];
     let index = 0;
-    for (let i = 0; i < numRows; i++) {
-        grid[i] = [];
-        for (let j = 0; j < keyLength; j++) {
-            grid[i][j] = substitutionText[index] || "";
+    for (let row = 0; row < numRows; row++) {
+        grid[row] = [];
+        for (let col = 0; col < keyLength; col++) {
+            grid[row][col] = substitutionText[index] || "";
             index++;
         }
     }
+    // Sort the key and get the column order
     const keyOrder = key.split("").map((char, index) => ({ char, index }));
-    keyOrder.sort((a, b) => a.char.localeCompare(b.char));
-    let formattedMatrix = "<table border='1'><tr>";
+    keyOrder.sort((a, b) => {
+        if (a.char === b.char) {
+            return a.index - b.index;
+        }
+        else {
+            return a.char.localeCompare(b.char);
+        }
+    });
+    // Column indicators (key letters)
+    const columnIndicators = keyOrder.map(({ char }) => char);
+    // Create the HTML table
+    let formattedMatrix = "<table><tr><th></th>";
+    // Header with column indicators
     for (const { char } of keyOrder) {
         formattedMatrix += `<th>${char}</th>`;
     }
     formattedMatrix += "</tr>";
+    // Matrix rows with row indicators
     for (let row = 0; row < numRows; row++) {
-        formattedMatrix += "<tr>";
+        formattedMatrix += `<tr><th>${row + 1}</th>`;
+        for (const { index: colIndex } of keyOrder) {
+            formattedMatrix += `<td>${grid[row][colIndex] || ""}</td>`;
+        }
+        formattedMatrix += "</tr>";
+    }
+    formattedMatrix += "</table>";
+    // Display in the UI
+    const matrixDiv = document.getElementById("matrix-column-key");
+    matrixDiv.innerHTML = formattedMatrix;
+}
+// Function for inverse columns
+function inverseColumnarTransposition(encryptedText, key) {
+    const keyLength = key.length;
+    const numRows = Math.ceil(encryptedText.length / keyLength);
+    const keyOrder = key.split("").map((char, index) => ({ char, index }));
+    keyOrder.sort((a, b) => a.char === b.char ? a.index - b.index : a.char.localeCompare(b.char));
+    // Calculate the lengths of columns
+    const colLengths = new Array(keyLength).fill(Math.floor(encryptedText.length / keyLength));
+    let extraChars = encryptedText.length % keyLength;
+    for (let i = 0; i < keyLength; i++) {
+        if (extraChars > 0) {
+            colLengths[i]++;
+            extraChars--;
+        }
+    }
+    // Debugging: log the lengths of each column
+    console.log("Column Lengths:", colLengths);
+    // Fill columns based on transposed data
+    const columns = [];
+    let index = 0;
+    for (let i = 0; i < keyLength; i++) {
+        const colLength = colLengths[i];
+        const colChars = encryptedText.substr(index, colLength).split("");
+        columns[keyOrder[i].index] = colChars;
+        index += colLength;
+    }
+    // Debugging: log each column for verification
+    columns.forEach((col, i) => console.log(`Column ${i}:`, col));
+    // Reconstruct the intermediate text from columns
+    let result = "";
+    for (let row = 0; row < numRows; row++) {
+        for (let col = 0; col < keyLength; col++) {
+            result += columns[col][row] || "";
+        }
+    }
+    return result;
+}
+function decryptUsingMatrix(substitutionText, matrix, variant) {
+    const indicators = indicatorsMap[variant];
+    let decryptedText = "";
+    for (let i = 0; i < substitutionText.length; i += 2) {
+        const rowIndicator = substitutionText[i];
+        const colIndicator = substitutionText[i + 1];
+        const row = indicators.indexOf(rowIndicator);
+        const col = indicators.indexOf(colIndicator);
+        if (row === -1 || col === -1) {
+            throw new Error(`Invalid indicators: ${rowIndicator}${colIndicator}`);
+        }
+        decryptedText += matrix[row][col];
+    }
+    return decryptedText;
+}
+function encryptCipher(plainText, matrixKey, columnKey, variant) {
+    const preparedText = prepareInput(plainText, variant);
+    const cipherMatrix = generatePolybiusSquare(matrixKey, variant);
+    const substitutionText = encryptUsingMatrix(preparedText, cipherMatrix, variant);
+    const encryptedText = columnarTransposition(substitutionText, columnKey);
+    return { substitutionText, encryptedText };
+}
+function decryptCipher(encryptedText, matrixKey, columnKey, variant) {
+    // Generate the cipher matrix based on the key
+    const cipherMatrix = generatePolybiusSquare(matrixKey, variant);
+    // Get the intermediate substitution text using inverse columnar transposition
+    const substitutionText = inverseColumnarTransposition(encryptedText, columnKey);
+    // Decrypt using the cipher matrix
+    let decryptedText = decryptUsingMatrix(substitutionText, cipherMatrix, variant);
+    // Revert placeholders if using ADFGX variant
+    if (variant === "ADFGX") {
+        decryptedText = revertPlaceholders(decryptedText);
+    }
+    return { substitutionText, decryptedText };
+}
+// Function for displaying the column matrix during decryption
+function displayColumnarMatrixDecrypt(substitutionText, key, encryptedLength) {
+    const keyLength = key.length;
+    const numRows = Math.ceil(encryptedLength / keyLength);
+    // Sort the key and get the column order
+    const keyOrder = key.split("").map((char, index) => ({ char, index }));
+    keyOrder.sort((a, b) => {
+        if (a.char === b.char) {
+            return a.index - b.index;
+        }
+        else {
+            return a.char.localeCompare(b.char);
+        }
+    });
+    // Calculate column lengths and assign extra characters according to the sorted key
+    const colLengths = new Array(keyLength).fill(Math.floor(encryptedLength / keyLength));
+    let extraChars = encryptedLength % keyLength;
+    for (let i = 0; i < keyLength; i++) {
+        if (extraChars > 0) {
+            colLengths[i]++;
+            extraChars--;
+        }
+    }
+    // Create columns and assign them to original positions
+    const columns = [];
+    let index = 0;
+    for (let i = 0; i < keyLength; i++) {
+        const colLength = colLengths[i];
+        const colChars = substitutionText.substr(index, colLength).split("");
+        columns[keyOrder[i].index] = colChars;
+        index += colLength;
+    }
+    // Reconstruct the matrix
+    const grid = [];
+    for (let row = 0; row < numRows; row++) {
+        grid[row] = [];
+        for (let col = 0; col < keyLength; col++) {
+            grid[row][col] = columns[col][row] || "";
+        }
+    }
+    // Create HTML table
+    let formattedMatrix = "<table><tr><th></th>";
+    // Header with column indicators
+    for (let col = 0; col < keyLength; col++) {
+        formattedMatrix += `<th>${key[col]}</th>`;
+    }
+    formattedMatrix += "</tr>";
+    // Matrix rows
+    for (let row = 0; row < numRows; row++) {
+        formattedMatrix += `<tr><th>${row + 1}</th>`;
         for (let col = 0; col < keyLength; col++) {
             formattedMatrix += `<td>${grid[row][col] || ""}</td>`;
         }
         formattedMatrix += "</tr>";
     }
     formattedMatrix += "</table>";
-    const matrixDiv = document.getElementById("matrix-column-key");
+    // Display in the UI
+    const matrixDiv = document.getElementById("matrix-column-key-decrypt");
     matrixDiv.innerHTML = formattedMatrix;
 }
-// Event listener for encryption
+// Event listener for encrypting
 (_a = document.querySelector(".encrypt-button")) === null || _a === void 0 ? void 0 : _a.addEventListener("click", () => {
     try {
         const variantSelect = document.getElementById("cipher-variant");
         const variant = variantSelect.value;
-        const matrixKeyInput = document.getElementById("key-text").value;
+        const matrixKeyInput = document.getElementById("matrix-key-encrypt").value;
         const matrixKey = prepareInput(matrixKeyInput, variant);
-        const columnKeyInput = document.getElementById("key-column-text").value;
+        const columnKeyInput = document.getElementById("column-key-encryption").value;
         const columnKey = prepareInput(columnKeyInput, variant).replace(/[^A-Z]/g, "");
         const plainText = document.getElementById("text-to-encrypt").value;
-        const { substitutionText, encryptedText } = encryptADFGVX(plainText, matrixKey, columnKey, variant);
-        // Display the prepared input text
-        document.getElementById("filtered-text-to-encrypt").value =
-            prepareInput(plainText, variant);
-        // Generate and display the cipher matrix
-        const cipherMatrix = generateCipherMatrix(matrixKey, variant);
-        displayCipherMatrix(cipherMatrix, variant);
-        // Display intermediate substitution text
-        document.getElementById("text-intermediate").value = substitutionText;
-        // Display the encrypted text
-        document.getElementById("encrypted-text").value = encryptedText;
-        // Display the columnar matrix
+        const { substitutionText, encryptedText } = encryptCipher(plainText, matrixKey, columnKey, variant);
+        document.getElementById("filtered-text-to-encrypt").value = prepareInput(plainText, variant);
+        const cipherMatrix = generatePolybiusSquare(matrixKey, variant);
+        displayPolybiusSquare(cipherMatrix, variant, true);
+        document.getElementById("text-substitution").value = substitutionText;
+        document.getElementById("encrypted-text").value =
+            encryptedText;
         displayColumnarMatrix(substitutionText, columnKey);
     }
     catch (error) {
@@ -235,15 +390,52 @@ function displayColumnarMatrix(substitutionText, key) {
         }
     }
 });
-// Event listener for decryption
-// Event listener for the Example button
-(_b = document.getElementById("example-button")) === null || _b === void 0 ? void 0 : _b.addEventListener("click", () => {
-    const variantSelect = document.getElementById("cipher-variant");
-    variantSelect.value = "ADFGVX";
-    const matrixKeyInput = document.getElementById("key-text");
+// Event listener for decrypting
+(_b = document.querySelector(".decrypt-button")) === null || _b === void 0 ? void 0 : _b.addEventListener("click", () => {
+    try {
+        const variantSelect = document.getElementById("cipher-variant");
+        const variant = variantSelect === null || variantSelect === void 0 ? void 0 : variantSelect.value;
+        const encryptedTextInput = document.getElementById("text-to-decrypt");
+        const matrixKeyInput = document.getElementById("matrix-key-decrypt");
+        const matrixKey = prepareInput(matrixKeyInput.value, variant);
+        const columnKeyInputElement = document.getElementById("column-key-decryption");
+        const columnKey = prepareInput(columnKeyInputElement.value, variant).replace(/[^A-Z]/g, "");
+        // Decrypt cipher text
+        const { substitutionText, decryptedText } = decryptCipher(encryptedTextInput.value, matrixKey, columnKey, variant);
+        // Display decrypted text
+        const decryptedTextElement = document.getElementById("decrypted-text");
+        if (decryptedTextElement) {
+            decryptedTextElement.value = decryptedText;
+        }
+        else {
+            throw new Error("Decrypted text output field not found.");
+        }
+        // Generate and display the Polybius Square in decryption section
+        const cipherMatrix = generatePolybiusSquare(matrixKey, variant);
+        displayPolybiusSquare(cipherMatrix, variant, false);
+        // Display Column Key Matrix
+        displayColumnarMatrixDecrypt(substitutionText, columnKey, encryptedTextInput.value.length);
+    }
+    catch (error) {
+        if (error instanceof Error) {
+            alert(error.message);
+        }
+        else {
+            alert("An unknown error occurred");
+        }
+    }
+});
+// Event listener for values Example
+(_c = document.getElementById("example-button")) === null || _c === void 0 ? void 0 : _c.addEventListener("click", () => {
+    const matrixKeyInput = document.getElementById("matrix-key-encrypt");
     matrixKeyInput.value = "Petrklíček".toUpperCase();
     const textToEncryptInput = document.getElementById("text-to-encrypt");
     textToEncryptInput.value = "Útok na Čeňka 19:00 !@@&#*^(OK.";
-    const columnKeyInput = document.getElementById("key-column-text");
+    textToEncryptInput.value = "Test";
+    const columnKeyInput = document.getElementById("column-key-encryption");
     columnKeyInput.value = "Providence".toUpperCase();
+    const matrixKeyInputDecrypt = document.getElementById("matrix-key-decrypt");
+    matrixKeyInputDecrypt.value = "Petrklíček".toUpperCase();
+    const columnKeyInputDecrypt = document.getElementById("column-key-decryption");
+    columnKeyInputDecrypt.value = "Providence".toUpperCase();
 });
