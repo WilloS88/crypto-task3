@@ -25,8 +25,7 @@ function applyPlaceholders(text: string): string {
 }
 
 function applySpacePlaceholder(text: string): string {
-  return text
-    .replace(/ /g, spacePlaceholder) // Replace spaces
+  return text.replace(/ /g, spacePlaceholder); // Replace spaces
 }
 
 // Revert placeholders back to spaces and numbers
@@ -317,9 +316,6 @@ function inverseColumnarTransposition(
     }
   }
 
-  // Debugging: log the lengths of each column
-  console.log("Column Lengths:", colLengths);
-
   // Assign characters from substitutionText to columns based on the sorted key order
   const columns: string[][] = [];
   let index = 0;
@@ -329,9 +325,6 @@ function inverseColumnarTransposition(
       .split("");
     index += colLengths[originalIndex];
   }
-
-  // Debugging: log each column for verification
-  // columns.forEach((col, i) => console.log(`Column ${i}:`, col));
 
   // Reconstruct the intermediate text from columns
   let result = "";
@@ -362,7 +355,6 @@ function decryptUsingMatrix(
     if (row === -1 || col === -1) {
       throw new Error(`Invalid indicators: ${rowIndicator}${colIndicator}`);
     }
-    console.log(`hodnota ${matrix[row][col]} X: ${row} Y: ${col}`);
 
     decryptedText += matrix[row][col];
   }
@@ -453,8 +445,6 @@ function displayColumnarMatrixDecrypt(
       .split("");
     index += colLengths[originalIndex];
   }
-
-  console.log("columns decrypt " + columns);
 
   // Reconstruct the matrix
   const grid: string[][] = Array.from({ length: numRows }, () =>
