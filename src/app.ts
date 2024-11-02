@@ -285,10 +285,10 @@ function inverseColumnarTransposition(
 ): string {
   const keyLength = key.length;
   const numRows = Math.ceil(encryptedText.length / keyLength);
-  const keyOrder = key.split("").map((char, index) => ({ char, index }));
-  keyOrder.sort((a, b) =>
-    a.char === b.char ? a.index - b.index : a.char.localeCompare(b.char)
-  );
+  const keyOrder = key
+    .split("")
+    .map((char, index) => ({ char, index }))
+    .sort((a, b) => a.char.localeCompare(b.char) || a.index - b.index);
 
   // Calculate the lengths of columns
   const colLengths = new Array(keyLength).fill(
@@ -315,8 +315,10 @@ function inverseColumnarTransposition(
     index += colLength;
   }
 
+  console.log("columns " + columns);
+
   // Debugging: log each column for verification
-  columns.forEach((col, i) => console.log(`Column ${i}:`, col));
+  // columns.forEach((col, i) => console.log(`Column ${i}:`, col));
 
   // Reconstruct the intermediate text from columns
   let result = "";
@@ -347,6 +349,7 @@ function decryptUsingMatrix(
     if (row === -1 || col === -1) {
       throw new Error(`Invalid indicators: ${rowIndicator}${colIndicator}`);
     }
+    console.log(`hodnota ${matrix[row][col]} X: ${row} Y: ${col}`);
 
     decryptedText += matrix[row][col];
   }
@@ -404,7 +407,7 @@ function decryptCipher(
 
 // Function for displaying the column matrix during decryption
 function displayColumnarMatrixDecrypt(
-  substitutionText: string,
+  encriptedText: string,
   key: string,
   encryptedLength: number
 ): void {
@@ -412,56 +415,45 @@ function displayColumnarMatrixDecrypt(
   const numRows = Math.ceil(encryptedLength / keyLength);
 
   // Sort the key and get the column order
-  const keyOrder = key.split("").map((char, index) => ({ char, index }));
-  keyOrder.sort((a, b) => {
-    if (a.char === b.char) {
-      return a.index - b.index;
-    } else {
-      return a.char.localeCompare(b.char);
-    }
-  });
+  const keyOrder = key
+    .split("")
+    .map((char, index) => ({ char, index }))
+    .sort((a, b) => a.char.localeCompare(b.char) || a.index - b.index);
 
-  // Calculate column lengths and assign extra characters according to the sorted key
-  const colLengths = new Array(keyLength).fill(
+  // Calculate column lengths based on the encrypted length and key length
+  const colLengths = Array.from({ length: keyLength }, () =>
     Math.floor(encryptedLength / keyLength)
   );
   let extraChars = encryptedLength % keyLength;
-  for (let i = 0; i < keyLength; i++) {
-    if (extraChars > 0) {
-      colLengths[i]++;
-      extraChars--;
-    }
-  }
+  for (let i = 0; i < extraChars; i++) colLengths[i]++;
 
-  // Create columns and assign them to original positions
+  // Assign characters from substitutionText to columns based on the sorted key order
   const columns: string[][] = [];
   let index = 0;
-  for (let i = 0; i < keyLength; i++) {
-    const colLength = colLengths[i];
-    const colChars = substitutionText.substr(index, colLength).split("");
-    columns[keyOrder[i].index] = colChars;
-    index += colLength;
+  for (const { index: originalIndex } of keyOrder) {
+    columns[originalIndex] = encriptedText
+      .substr(index, colLengths[originalIndex])
+      .split("");
+    index += colLengths[originalIndex];
   }
 
+  console.log("columns decrypt " + columns);
+
   // Reconstruct the matrix
-  const grid: string[][] = [];
-  for (let row = 0; row < numRows; row++) {
-    grid[row] = [];
-    for (let col = 0; col < keyLength; col++) {
-      grid[row][col] = columns[col][row] || "";
+  const grid: string[][] = Array.from({ length: numRows }, () =>
+    Array(keyLength).fill("")
+  );
+  for (let col = 0; col < keyLength; col++) {
+    for (let row = 0; row < columns[col].length; row++) {
+      grid[row][col] = columns[col][row];
     }
   }
 
-  // Create HTML table
+  // Generate HTML table for the matrix
   let formattedMatrix = "<table><tr><th></th>";
-
-  // Header with column indicators
-  for (let col = 0; col < keyLength; col++) {
-    formattedMatrix += `<th>${key[col]}</th>`;
-  }
+  for (const { char } of keyOrder) formattedMatrix += `<th>${char}</th>`;
   formattedMatrix += "</tr>";
 
-  // Matrix rows
   for (let row = 0; row < numRows; row++) {
     formattedMatrix += `<tr><th>${row + 1}</th>`;
     for (let col = 0; col < keyLength; col++) {
@@ -471,7 +463,7 @@ function displayColumnarMatrixDecrypt(
   }
   formattedMatrix += "</table>";
 
-  // Display in the UI
+  // Display the HTML table in the UI
   const matrixDiv = document.getElementById(
     "matrix-column-key-decrypt"
   ) as HTMLDivElement;
@@ -559,6 +551,13 @@ document.querySelector(".decrypt-button")?.addEventListener("click", () => {
       variant
     ).replace(/[^A-Z]/g, "");
 
+    // Display Column Key Matrix
+    displayColumnarMatrixDecrypt(
+      encryptedTextInput.value,
+      columnKey,
+      encryptedTextInput.value.length
+    );
+
     // Decrypt cipher text
     const { substitutionText, decryptedText } = decryptCipher(
       encryptedTextInput.value,
@@ -580,13 +579,6 @@ document.querySelector(".decrypt-button")?.addEventListener("click", () => {
     // Generate and display the Polybius Square in decryption section
     const cipherMatrix = generatePolybiusSquare(matrixKey, variant);
     displayPolybiusSquare(cipherMatrix, variant, false);
-
-    // Display Column Key Matrix
-    displayColumnarMatrixDecrypt(
-      substitutionText,
-      columnKey,
-      encryptedTextInput.value.length
-    );
   } catch (error) {
     if (error instanceof Error) {
       alert(error.message);
