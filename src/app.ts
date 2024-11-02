@@ -24,6 +24,11 @@ function applyPlaceholders(text: string): string {
     .replace(/\d/g, (digit) => numbersPlaceholder[parseInt(digit)]); // Replace numbers
 }
 
+function applySpacePlaceholder(text: string): string {
+  return text
+    .replace(/ /g, spacePlaceholder) // Replace spaces
+}
+
 // Revert placeholders back to spaces and numbers
 function revertPlaceholders(text: string): string {
   let result = text;
@@ -31,6 +36,12 @@ function revertPlaceholders(text: string): string {
   numbersPlaceholder.forEach((placeholder, index) => {
     result = result.replace(new RegExp(placeholder, "g"), index.toString()); // Replace number placeholders
   });
+  return result;
+}
+
+function revertSpacePlaceholder(text: string): string {
+  let result = text;
+  result = result.replace(new RegExp(spacePlaceholder, "g"), " "); // Replace space placeholders
   return result;
 }
 
@@ -47,6 +58,10 @@ function isCharInMatrix(matrix: string[][], char: string): boolean {
 function prepareInput(text: string, variant: "ADFGX" | "ADFGVX"): string {
   if (variant === "ADFGX") {
     text = applyPlaceholders(text); // Apply placeholders for ADFGX variant
+  }
+
+  if (variant === "ADFGVX") {
+    text = applySpacePlaceholder(text);
   }
 
   let result = text
@@ -305,17 +320,15 @@ function inverseColumnarTransposition(
   // Debugging: log the lengths of each column
   console.log("Column Lengths:", colLengths);
 
-  // Fill columns based on transposed data
+  // Assign characters from substitutionText to columns based on the sorted key order
   const columns: string[][] = [];
   let index = 0;
-  for (let i = 0; i < keyLength; i++) {
-    const colLength = colLengths[i];
-    const colChars = encryptedText.substr(index, colLength).split("");
-    columns[keyOrder[i].index] = colChars;
-    index += colLength;
+  for (const { index: originalIndex } of keyOrder) {
+    columns[originalIndex] = encryptedText
+      .substr(index, colLengths[originalIndex])
+      .split("");
+    index += colLengths[originalIndex];
   }
-
-  console.log("columns " + columns);
 
   // Debugging: log each column for verification
   // columns.forEach((col, i) => console.log(`Column ${i}:`, col));
@@ -399,6 +412,10 @@ function decryptCipher(
 
   // Revert placeholders if using ADFGX variant
   if (variant === "ADFGX") {
+    decryptedText = revertPlaceholders(decryptedText);
+  }
+
+  if (variant === "ADFGVX") {
     decryptedText = revertPlaceholders(decryptedText);
   }
 
@@ -599,7 +616,6 @@ document.getElementById("example-button")?.addEventListener("click", () => {
     "text-to-encrypt"
   ) as HTMLTextAreaElement;
   textToEncryptInput.value = "Útok na Čeňka 19:00 !@@&#*^(OK.";
-  textToEncryptInput.value = "Test";
 
   const columnKeyInput = document.getElementById(
     "column-key-encryption"
