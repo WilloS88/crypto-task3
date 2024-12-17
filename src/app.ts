@@ -420,6 +420,8 @@ function displayColumnarMatrixDecrypt(
   key: string,
   encryptedLength: number
 ): void {
+  encriptedText = encriptedText.substring(0, encryptedLength);
+
   const keyLength = key.length;
   const numRows = Math.ceil(encryptedLength / keyLength);
 
@@ -437,7 +439,7 @@ function displayColumnarMatrixDecrypt(
   for (let i = 0; i < extraChars; i++) colLengths[i]++;
 
   // Assign characters from substitutionText to columns based on the sorted key order
-  const columns: string[][] = [];
+  const columns: string[][] = new Array(keyLength).fill(null).map(() => []);
   let index = 0;
   for (const { index: originalIndex } of keyOrder) {
     columns[originalIndex] = encriptedText
@@ -450,6 +452,7 @@ function displayColumnarMatrixDecrypt(
   const grid: string[][] = Array.from({ length: numRows }, () =>
     Array(keyLength).fill("")
   );
+
   for (let col = 0; col < keyLength; col++) {
     for (let row = 0; row < columns[col].length; row++) {
       grid[row][col] = columns[col][row];
@@ -458,7 +461,9 @@ function displayColumnarMatrixDecrypt(
 
   // Generate HTML table for the matrix
   let formattedMatrix = "<table><tr><th></th>";
-  for (const { char } of keyOrder) formattedMatrix += `<th>${char}</th>`;
+  for (let col = 0; col < keyLength; col++) {
+    formattedMatrix += `<th>${key[col]}</th>`;
+  }
   formattedMatrix += "</tr>";
 
   for (let row = 0; row < numRows; row++) {

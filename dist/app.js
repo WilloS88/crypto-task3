@@ -316,6 +316,7 @@ function decryptCipher(encryptedText, matrixKey, columnKey, variant) {
 }
 // Function for displaying the column matrix during decryption
 function displayColumnarMatrixDecrypt(encriptedText, key, encryptedLength) {
+    encriptedText = encriptedText.substring(0, encryptedLength);
     const keyLength = key.length;
     const numRows = Math.ceil(encryptedLength / keyLength);
     // Sort the key and get the column order
@@ -329,7 +330,7 @@ function displayColumnarMatrixDecrypt(encriptedText, key, encryptedLength) {
     for (let i = 0; i < extraChars; i++)
         colLengths[i]++;
     // Assign characters from substitutionText to columns based on the sorted key order
-    const columns = [];
+    const columns = new Array(keyLength).fill(null).map(() => []);
     let index = 0;
     for (const { index: originalIndex } of keyOrder) {
         columns[originalIndex] = encriptedText
@@ -346,8 +347,9 @@ function displayColumnarMatrixDecrypt(encriptedText, key, encryptedLength) {
     }
     // Generate HTML table for the matrix
     let formattedMatrix = "<table><tr><th></th>";
-    for (const { char } of keyOrder)
-        formattedMatrix += `<th>${char}</th>`;
+    for (let col = 0; col < keyLength; col++) {
+        formattedMatrix += `<th>${key[col]}</th>`;
+    }
     formattedMatrix += "</tr>";
     for (let row = 0; row < numRows; row++) {
         formattedMatrix += `<tr><th>${row + 1}</th>`;
